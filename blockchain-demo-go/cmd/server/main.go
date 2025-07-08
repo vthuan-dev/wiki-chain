@@ -90,6 +90,8 @@ func main() {
 
 	// Fix Contest endpoints by using explicit subrouter for method separation
 	contestsRouter := apiRouter.PathPrefix("/contests").Subrouter()
+	contestsRouter.HandleFunc("/search", apiHandler.SearchContestsHandler).Methods("GET", "OPTIONS")
+
 	contestsRouter.HandleFunc("", apiHandler.ListContests).Methods("GET", "OPTIONS")    // GET /contests
 	contestsRouter.HandleFunc("", apiHandler.CreateContest).Methods("POST", "OPTIONS")  // POST /contests
 	contestsRouter.HandleFunc("/{id}", apiHandler.GetContest).Methods("GET", "OPTIONS") // GET /contests/{id}

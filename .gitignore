@@ -2,7 +2,10 @@
 *.log
 
 # Environment files
-.env
+/blockchain-demo-go/.env
+/backend/.env
+/backend/node_modules
+/globe-wiki-client/node_modules
 .env.local
 .env.production
 
@@ -36,3 +39,6 @@ go.work
 # OS files
 .DS_Store
 Thumbs.db
+
+# Ignore environment files
+.env

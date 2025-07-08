@@ -1,9 +1,6 @@
-# 🚀 Hướng dẫn Deploy Smart Contract và Chạy Backend
+# Hướng dẫn Deploy Smart Contract và Chạy Backend
 
-## ⚠️ CẢNH BÁO BẢO MẬT
-- Private key đã được chia sẻ công khai: `e6b362527d55d4e0a8b8330eb32b0e8eafed357a5dc73e3f8024a4f5d424edd7`
-- **KHUYẾN NGHỊ MẠNH**: Tạo ví mới ngay lập tức cho production
-- Chỉ sử dụng ví này cho mục đích test/demo
+
 
 ## 🔧 Bước 1: Deploy Smart Contract
 

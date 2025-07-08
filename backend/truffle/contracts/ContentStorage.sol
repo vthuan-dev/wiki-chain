@@ -52,6 +52,10 @@ contract ContentStorage {
     mapping(string => Contest) private contests;
     mapping(string => Sponsor) private sponsors;
     
+    // ========== LƯU CONTEST DẠNG JSON (DỄ ĐỌC TRÊN EXPLORER) ==========
+    event ContestCreatedJson(string jsonData);
+    mapping(string => string) public contestJsons;
+
     // Mapping để theo dõi thí sinh đăng ký tham gia cuộc thi
     mapping(string => mapping(string => bool)) private contestantRegistrations; // contestId => (contestantId => registered)
     
@@ -186,6 +190,14 @@ contract ContentStorage {
         emit ContestCreated(id, name);
     }
     
+    // ========== LƯU CONTEST DẠNG JSON (DỄ ĐỌC TRÊN EXPLORER) ==========
+    function createContestJson(string memory id, string memory jsonData) public {
+        require(bytes(contestJsons[id]).length == 0, "Contest with this ID already exists");
+        contestJsons[id] = jsonData;
+        contestIds.push(id);
+        emit ContestCreatedJson(jsonData);
+    }
+    
     // Lấy thông tin cuộc thi theo ID
     function getContest(string memory id) public view returns (
         string memory name,
@@ -291,5 +303,82 @@ contract ContentStorage {
         }
         
         return result;
+    }
+    
+    // Hàm tìm kiếm contest theo từ khóa (trong tên hoặc mô tả)
+    function searchContests(string memory keyword) public view returns (string[] memory) {
+        uint count = 0;
+        bytes memory keywordBytes = bytes(_toLower(keyword));
+
+        // Đếm số contest phù hợp
+        for (uint i = 0; i < contestIds.length; i++) {
+            Contest memory c = contests[contestIds[i]];
+            if (_contains(_toLower(c.name), keywordBytes) || _contains(_toLower(c.description), keywordBytes)) {
+                count++;
+            }
+        }
+
+        // Tạo mảng kết quả
+        string[] memory result = new string[](count);
+        uint index = 0;
+        for (uint i = 0; i < contestIds.length; i++) {
+            Contest memory c = contests[contestIds[i]];
+            if (_contains(_toLower(c.name), keywordBytes) || _contains(_toLower(c.description), keywordBytes)) {
+                result[index] = contestIds[i];
+                index++;
+            }
+        }
+        return result;
+    }
+
+    // Hàm kiểm tra chuỗi con (case-insensitive, chỉ hỗ trợ ASCII)
+    function _contains(string memory what, bytes memory where) internal pure returns (bool) {
+        bytes memory whatBytes = bytes(what);
+        if (where.length == 0 || whatBytes.length < where.length) {
+            return false;
+        }
+        for (uint i = 0; i <= whatBytes.length - where.length; i++) {
+            bool found = true;
+            for (uint j = 0; j < where.length; j++) {
+                if (whatBytes[i + j] != where[j]) {
+                    found = false;
+                    break;
+                }
+            }
+            if (found) return true;
+        }
+        return false;
+    }
+
+    // Hàm chuyển chuỗi về chữ thường (chỉ hỗ trợ ASCII)
+    function _toLower(string memory str) internal pure returns (string memory) {
+        bytes memory bStr = bytes(str);
+        bytes memory bLower = new bytes(bStr.length);
+        for (uint i = 0; i < bStr.length; i++) {
+            // A-Z: 65-90, a-z: 97-122
+            if ((uint8(bStr[i]) >= 65) && (uint8(bStr[i]) <= 90)) {
+                bLower[i] = bytes1(uint8(bStr[i]) + 32);
+            } else {
+                bLower[i] = bStr[i];
+            }
+        }
+        return string(bLower);
+    }
+
+    // Lấy contest JSON theo id (duyệt toàn bộ mapping)
+    function getContestJsonById(string memory id) public view returns (string memory) {
+        // Duyệt toàn bộ contestIds, lấy JSON, parse id, so sánh
+        for (uint i = 0; i < contestIds.length; i++) {
+            string memory contestId = contestIds[i];
+            string memory jsonData = contestJsons[contestId];
+            // So sánh id (nếu lưu key là id)
+            if (bytes(jsonData).length > 0) {
+                // Đơn giản: nếu contestId == id
+                if (keccak256(bytes(contestId)) == keccak256(bytes(id))) {
+                    return jsonData;
+                }
+            }
+        }
+        return "";
     }
 }

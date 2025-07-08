@@ -269,19 +269,25 @@ func (bs *BlockchainService) CreateContest(req *models.CreateContestRequest) (*m
 		}, fmt.Errorf("invalid date range")
 	}
 
-	contest := &models.Contest{
-		ID:          id,
-		Name:        req.Name,
-		Description: req.Description,
-		StartDate:   startDate,
-		EndDate:     endDate,
-		Organizer:   bs.fromAddr.Hex(),
-		Active:      true,
-		ImageURL:    req.ImageURL,
-		Timestamp:   time.Now(),
+	// Serialize contest to formatted JSON
+	contestJson := map[string]interface{}{
+		"id":          id,
+		"name":        req.Name,
+		"description": req.Description,
+		"start_date":  startDate.Format(time.RFC3339),
+		"end_date":    endDate.Format(time.RFC3339),
+		"organizer":   bs.fromAddr.Hex(),
+		"image_url":   req.ImageURL,
+		"timestamp":   time.Now().Format(time.RFC3339),
+	}
+	jsonBytes, err := json.MarshalIndent(contestJson, "", "  ")
+	if err != nil {
+		return &models.CreateContestResponse{
+			Success: false,
+			Message: "Failed to marshal contest JSON",
+		}, err
 	}
 
-	// Call contract
 	defer func() {
 		if r := recover(); r != nil {
 			log.Printf("[WARN] Recovered in CreateContest contract call: %v", r)
@@ -297,7 +303,6 @@ func (bs *BlockchainService) CreateContest(req *models.CreateContestRequest) (*m
 		}, err
 	}
 
-	// Create transactor
 	auth, err := bind.NewKeyedTransactorWithChainID(bs.privateKey, bs.chainID)
 	if err != nil {
 		return &models.CreateContestResponse{
@@ -306,12 +311,10 @@ func (bs *BlockchainService) CreateContest(req *models.CreateContestRequest) (*m
 		}, err
 	}
 
-	// Prepare input for createContest Solidity function
-	input := []interface{}{id, req.Name, req.Description, big.NewInt(startDate.Unix()), big.NewInt(endDate.Unix()), req.ImageURL}
-
-	// Call contract
+	// Call new createContestJson function with id and JSON string
+	input := []interface{}{id, string(jsonBytes)}
 	contract := bind.NewBoundContract(contractAddr, parsedABI, bs.client, bs.client, bs.client)
-	tx, err := contract.Transact(auth, "createContest", input...)
+	tx, err := contract.Transact(auth, "createContestJson", input...)
 	if err != nil {
 		return &models.CreateContestResponse{
 			Success: false,
@@ -319,43 +322,108 @@ func (bs *BlockchainService) CreateContest(req *models.CreateContestRequest) (*m
 		}, err
 	}
 
-	contest.TxHash = tx.Hash().Hex()
-	log.Printf("[OK] Contest pushed to blockchain: %s", contest.TxHash)
+	log.Printf("[OK] Contest JSON pushed to blockchain: %s", tx.Hash().Hex())
 
 	return &models.CreateContestResponse{
 		Success: true,
-		Message: "Contest created and pushed to blockchain",
-		TxHash:  contest.TxHash,
+		Message: "Contest created and pushed to blockchain (JSON)",
+		TxHash:  tx.Hash().Hex(),
 		ID:      id,
 	}, nil
 }
 
-// SearchContests tìm kiếm contest trên blockchain theo từ khóa ở mọi trường
+// SearchContests tìm kiếm contest trên blockchain theo từ khóa ở mọi trường (JSON version)
 func (bs *BlockchainService) SearchContests(keyword string) ([]*models.Contest, error) {
-	resp, err := bs.GetAllContests()
+	contractAddr := common.HexToAddress(bs.config.ContractAddress)
+	parsedABI, err := LoadContractABI("../backend/truffle/build/contracts/ContentStorage.json")
 	if err != nil {
 		return []*models.Contest{}, err
 	}
+	contract := bind.NewBoundContract(contractAddr, parsedABI, bs.client, bs.client, bs.client)
+	callOpts := &bind.CallOpts{Pending: false, From: bs.fromAddr}
+	// Lấy tất cả contestIds
+	var idsRaw []interface{}
+	err = contract.Call(callOpts, &idsRaw, "getAllContestIds")
+	if err != nil {
+		return []*models.Contest{}, err
+	}
+	var ids []string
+	if len(idsRaw) > 0 {
+		if arr, ok := idsRaw[0].([]string); ok {
+			ids = arr
+		} else if arr, ok := idsRaw[0].([]interface{}); ok {
+			for _, v := range arr {
+				if s, ok := v.(string); ok {
+					ids = append(ids, s)
+				} else if b, ok := v.([]byte); ok {
+					ids = append(ids, string(b))
+				}
+			}
+		}
+	}
 	var results []*models.Contest
 	keyword = strings.ToLower(removeDiacritics(keyword))
-	for _, c := range resp.Data {
+	for _, id := range ids {
+		var jsonStrRaw []interface{}
+		err := contract.Call(callOpts, &jsonStrRaw, "getContestJsonById", id)
+		if err != nil || len(jsonStrRaw) == 0 {
+			continue
+		}
+		jsonStr, ok := jsonStrRaw[0].(string)
+		if !ok || jsonStr == "" {
+			continue
+		}
+		var c models.Contest
+		if err := json.Unmarshal([]byte(jsonStr), &c); err != nil {
+			continue
+		}
 		if strings.Contains(strings.ToLower(removeDiacritics(c.Name)), keyword) ||
 			strings.Contains(strings.ToLower(removeDiacritics(c.Description)), keyword) ||
 			strings.Contains(strings.ToLower(removeDiacritics(c.ImageURL)), keyword) ||
 			strings.Contains(strings.ToLower(removeDiacritics(c.Organizer)), keyword) {
-			results = append(results, c)
+			results = append(results, &c)
 		}
 	}
 	return results, nil
 }
 
-// GetContest retrieves contest by ID from blockchain
+// GetContest retrieves contest by ID from blockchain (JSON version)
 func (bs *BlockchainService) GetContest(id string) (*models.GetContestResponse, error) {
-	// This would need to be implemented to read contest from blockchain
-	// For now, return not found as this requires smart contract support
+	contractAddr := common.HexToAddress(bs.config.ContractAddress)
+	parsedABI, err := LoadContractABI("../backend/truffle/build/contracts/ContentStorage.json")
+	if err != nil {
+		return &models.GetContestResponse{
+			Success: false,
+			Message: "Failed to load contract ABI",
+		}, err
+	}
+	contract := bind.NewBoundContract(contractAddr, parsedABI, bs.client, bs.client, bs.client)
+	callOpts := &bind.CallOpts{Pending: false, From: bs.fromAddr}
+	var jsonStrRaw []interface{}
+	err = contract.Call(callOpts, &jsonStrRaw, "getContestJsonById", id)
+	if err != nil || len(jsonStrRaw) == 0 {
+		return &models.GetContestResponse{
+			Success: false,
+			Message: "Contest not found on blockchain",
+		}, err
+	}
+	jsonStr, ok := jsonStrRaw[0].(string)
+	if !ok || jsonStr == "" {
+		return &models.GetContestResponse{
+			Success: false,
+			Message: "Contest not found on blockchain",
+		}, nil
+	}
+	var contest models.Contest
+	if err := json.Unmarshal([]byte(jsonStr), &contest); err != nil {
+		return &models.GetContestResponse{
+			Success: false,
+			Message: "Failed to parse contest JSON",
+		}, err
+	}
 	return &models.GetContestResponse{
-		Success: false,
-		Message: "Contest not found on blockchain",
+		Success: true,
+		Data:    &contest,
 	}, nil
 }
 
