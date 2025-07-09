@@ -32,11 +32,6 @@ func setupBenchmarkService(b *testing.B) *service.BlockchainService {
 	paths := []string{
 		"ContentStorage.json",
 		"../ContentStorage.json",
-		"../../ContentStorage.json",
-		"../real_blockchain/ContentStorage.json",
-		"../../real_blockchain/ContentStorage.json",
-		"../contracts/ContentStorage.json",
-		"../../contracts/ContentStorage.json",
 	}
 	var contractPath string
 	for _, path := range paths {
