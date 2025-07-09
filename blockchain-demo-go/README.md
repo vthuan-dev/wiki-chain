@@ -52,7 +52,7 @@ cp .env.example .env
 Chỉnh sửa file `.env`:
 ```env
 # Blockchain Network Settings
-NETWORK_URL=https://rpc.ankr.com/polygon_mumbai
+NETWORK_URL=http://103.69.98.80:8545
 CHAIN_ID=80001
 
 # Contract Settings (optional)
