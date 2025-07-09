@@ -11,7 +11,7 @@
 - ✅ **Push/Get dữ liệu blockchain**: Lưu trữ và truy xuất dữ liệu từ blockchain
 - ✅ **REST API**: API endpoints đầy đủ cho frontend integration
 - ✅ **EVM Compatible**: Hỗ trợ các mạng blockchain tương thích EVM
-- ✅ **Demo Mode**: Có thể chạy mà không cần kết nối blockchain thật
+
 
 ## 📁 Cấu trúc dự án
 
