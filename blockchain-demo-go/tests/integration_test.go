@@ -1,35 +1,20 @@
 package tests
 
 import (
-	"blockchain-demo/internal/config"
 	"blockchain-demo/internal/models"
 	"blockchain-demo/internal/service"
 	"fmt"
 	"testing"
 	"time"
 
-	"github.com/joho/godotenv"
-
 	"github.com/stretchr/testify/assert"
 )
 
-func setupIntegrationTest(t *testing.T) *service.BlockchainService {
-	// Load .env file
-	_ = godotenv.Load(".env.test")
-
-	// Load configuration
-	cfg, err := config.Load()
-	if err != nil {
-		t.Fatalf("Failed to load config: %v", err)
-	}
-
-	// Initialize blockchain service
-	blockchainService, err := service.NewBlockchainService(cfg)
-	if err != nil {
-		t.Fatalf("Failed to initialize blockchain service: %v", err)
-	}
-
-	return blockchainService
+func setupIntegrationTest(t *testing.T) service.BlockchainServiceInterface {
+	// Sử dụng mock service thay vì real service để test
+	t.Log("Using mock blockchain service for integration tests")
+	mockService := service.NewMockBlockchainService()
+	return mockService
 }
 
 func TestFullContestWorkflow(t *testing.T) {

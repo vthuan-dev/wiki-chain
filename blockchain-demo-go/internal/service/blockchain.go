@@ -295,7 +295,7 @@ func (bs *BlockchainService) CreateContest(req *models.CreateContestRequest) (*m
 	}()
 
 	contractAddr := common.HexToAddress(bs.config.ContractAddress)
-	parsedABI, err := LoadContractABI("../backend/truffle/build/contracts/ContentStorage.json")
+	parsedABI, err := LoadContractABI(bs.config.ContractJSON)
 	if err != nil {
 		return &models.CreateContestResponse{
 			Success: false,
@@ -335,7 +335,7 @@ func (bs *BlockchainService) CreateContest(req *models.CreateContestRequest) (*m
 // SearchContests tìm kiếm contest trên blockchain theo từ khóa ở mọi trường (JSON version)
 func (bs *BlockchainService) SearchContests(keyword string) ([]*models.Contest, error) {
 	contractAddr := common.HexToAddress(bs.config.ContractAddress)
-	parsedABI, err := LoadContractABI("../backend/truffle/build/contracts/ContentStorage.json")
+	parsedABI, err := LoadContractABI(bs.config.ContractJSON)
 	if err != nil {
 		return []*models.Contest{}, err
 	}
@@ -390,7 +390,7 @@ func (bs *BlockchainService) SearchContests(keyword string) ([]*models.Contest, 
 // GetContest retrieves contest by ID from blockchain (JSON version)
 func (bs *BlockchainService) GetContest(id string) (*models.GetContestResponse, error) {
 	contractAddr := common.HexToAddress(bs.config.ContractAddress)
-	parsedABI, err := LoadContractABI("../backend/truffle/build/contracts/ContentStorage.json")
+	parsedABI, err := LoadContractABI(bs.config.ContractJSON)
 	if err != nil {
 		return &models.GetContestResponse{
 			Success: false,
@@ -436,7 +436,7 @@ func (bs *BlockchainService) GetAllContests() (*models.ListContestsResponse, err
 	}()
 
 	contractAddr := common.HexToAddress(bs.config.ContractAddress)
-	parsedABI, err := LoadContractABI("../backend/truffle/build/contracts/ContentStorage.json")
+	parsedABI, err := LoadContractABI(bs.config.ContractJSON)
 	if err != nil {
 		return &models.ListContestsResponse{
 			Success: false,

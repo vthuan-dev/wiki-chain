@@ -1,7 +1,9 @@
+// internal/config/config.go
 package config
 
 import (
 	"os"
+	"path/filepath"
 
 	"github.com/joho/godotenv"
 )
@@ -17,21 +19,32 @@ type Config struct {
 	ChainID         string
 	ContractAddress string
 	PrivateKey      string
+	ContractJSON    string
 }
 
 // Load loads configuration from environment variables
 func Load() (*Config, error) {
-	// Load .env file if it exists (optional)
+
 	_ = godotenv.Load()
+
+
+	pwd, err := os.Getwd()
+	if err != nil {
+		return nil, err
+	}
+
+
+	defaultContractPath := filepath.Join(pwd, "..", "backend", "truffle", "build", "contracts", "ContentStorage.json")
 
 	config := &Config{
 		Host: getEnv("HOST", "localhost"),
-		Port: getEnv("PORT", "8081"), // Đổi từ 8080 sang 8081
+		Port: getEnv("PORT", "8081"),
 
 		NetworkURL:      getEnv("NETWORK_URL", "https://rpc.ankr.com/polygon_mumbai"),
 		ChainID:         getEnv("CHAIN_ID", "80001"),
 		ContractAddress: getEnv("CONTRACT_ADDRESS", ""),
 		PrivateKey:      getEnv("PRIVATE_KEY", ""),
+		ContractJSON:    getEnv("CONTRACT_JSON", defaultContractPath),
 	}
 
 	return config, nil

@@ -12,11 +12,11 @@ import (
 
 // Handler handles HTTP requests
 type Handler struct {
-	blockchainService *service.BlockchainService
+	blockchainService service.BlockchainServiceInterface
 }
 
 // NewHandler creates a new API handler
-func NewHandler(blockchainService *service.BlockchainService) *Handler {
+func NewHandler(blockchainService service.BlockchainServiceInterface) *Handler {
 	return &Handler{
 		blockchainService: blockchainService,
 	}
