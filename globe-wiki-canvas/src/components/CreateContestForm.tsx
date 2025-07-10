@@ -1,16 +1,19 @@
 import React, { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Plus, Calendar, Image } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 interface CreateContestFormProps {
   children: React.ReactNode;
 }
 
 const CreateContestForm = ({ children }: CreateContestFormProps) => {
+  const navigate = useNavigate();
+  const [open, setOpen] = useState(false);
   const [formData, setFormData] = useState({
     id: '',
     name: '',
@@ -19,6 +22,17 @@ const CreateContestForm = ({ children }: CreateContestFormProps) => {
     endDate: '',
     imageURL: ''
   });
+
+  const resetForm = () => {
+    setFormData({
+      id: '',
+      name: '',
+      description: '',
+      startDate: '',
+      endDate: '',
+      imageURL: ''
+    });
+  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -62,14 +76,9 @@ const CreateContestForm = ({ children }: CreateContestFormProps) => {
       const data = await res.json();
       if (res.ok && data.success) {
         alert('Tạo cuộc thi thành công! ID: ' + data.id);
-        setFormData({
-          id: '',
-          name: '',
-          description: '',
-          startDate: '',
-          endDate: '',
-          imageURL: ''
-        });
+        resetForm();
+        setOpen(false); // Đóng dialog
+        navigate(`/contest/${data.id}`); // Chuyển đến trang chi tiết contest
       } else {
         alert('Tạo cuộc thi thất bại: ' + (data.message || data.error));
       }
@@ -79,7 +88,7 @@ const CreateContestForm = ({ children }: CreateContestFormProps) => {
   };
 
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         {children}
       </DialogTrigger>
@@ -195,14 +204,7 @@ const CreateContestForm = ({ children }: CreateContestFormProps) => {
             <Button 
               type="button" 
               variant="outline" 
-              onClick={() => setFormData({
-                id: '',
-                name: '',
-                description: '',
-                startDate: '',
-                endDate: '',
-                imageURL: ''
-              })}
+              onClick={resetForm}
             >
               Reset Form
             </Button>
