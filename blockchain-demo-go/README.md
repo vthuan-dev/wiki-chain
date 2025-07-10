@@ -11,7 +11,7 @@
 - ✅ **Push/Get dữ liệu blockchain**: Lưu trữ và truy xuất dữ liệu từ blockchain
 - ✅ **REST API**: API endpoints đầy đủ cho frontend integration
 - ✅ **EVM Compatible**: Hỗ trợ các mạng blockchain tương thích EVM
-- ✅ **Demo Mode**: Có thể chạy mà không cần kết nối blockchain thật
+
 
 ## 📁 Cấu trúc dự án
 
@@ -52,7 +52,7 @@ cp .env.example .env
 Chỉnh sửa file `.env`:
 ```env
 # Blockchain Network Settings
-NETWORK_URL=https://rpc.ankr.com/polygon_mumbai
+NETWORK_URL=http://103.69.98.80:8545
 CHAIN_ID=80001
 
 # Contract Settings (optional)
