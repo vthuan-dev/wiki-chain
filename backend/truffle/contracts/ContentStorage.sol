@@ -383,4 +383,10 @@ contract ContentStorage {
         }
         return "";
     }
+    
+    // Cập nhật tx_hash cho contest đã tạo
+    function updateContestTxHash(string memory id, string memory jsonData) public {
+        require(bytes(contestJsons[id]).length > 0, "Contest does not exist");
+        contestJsons[id] = jsonData;
+    }
 }
