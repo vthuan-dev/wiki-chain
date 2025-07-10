@@ -280,6 +280,7 @@ func (bs *BlockchainService) CreateContest(req *models.CreateContestRequest) (*m
 		"image_url":   req.ImageURL,
 		"timestamp":   time.Now().Format(time.RFC3339),
 	}
+
 	jsonBytes, err := json.MarshalIndent(contestJson, "", "  ")
 	if err != nil {
 		return &models.CreateContestResponse{
@@ -308,6 +309,23 @@ func (bs *BlockchainService) CreateContest(req *models.CreateContestRequest) (*m
 		return &models.CreateContestResponse{
 			Success: false,
 			Message: "Failed to create transactor",
+		}, err
+	}
+
+	// Get transaction hash first
+	txHash := bs.generateTxHash()
+
+	// Add txHash to contest JSON
+	contestJson["tx_hash"] = txHash
+	// Add transaction URL
+	contestJson["tx_url"] = fmt.Sprintf("https://explorer.testnet.hii.network/tx/%s", txHash)
+
+	// Re-marshal JSON with txHash
+	jsonBytes, err = json.MarshalIndent(contestJson, "", "  ")
+	if err != nil {
+		return &models.CreateContestResponse{
+			Success: false,
+			Message: "Failed to marshal contest JSON with txHash",
 		}, err
 	}
 

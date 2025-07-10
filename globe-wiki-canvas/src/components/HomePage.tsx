@@ -13,17 +13,17 @@ const HomePage = () => {
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
   const navigate = useNavigate();
 
-  const languages = [
-    { name: 'English', articles: '7,009,000+', code: 'en' },
-    { name: 'Tiếng Việt', articles: '1,294,000+', code: 'vi' },
-    { name: '日本語', articles: '1,462,000+', code: 'ja' },
-    { name: 'Русский', articles: '2,050,000+', code: 'ru' },
-    { name: 'Deutsch', articles: '3,024,000+', code: 'de' },
-    { name: 'Español', articles: '2,041,000+', code: 'es' },
-    { name: 'Français', articles: '2,690,000+', code: 'fr' },
-    { name: '中文', articles: '1,482,000+', code: 'zh' },
-    { name: 'Italiano', articles: '1,922,000+', code: 'it' },
-    { name: 'Português', articles: '1,148,000+', code: 'pt' },
+  const categories = [
+    { name: 'Smart Contracts', articles: '1,205+', code: 'smart-contracts' },
+    { name: 'DeFi Contests', articles: '856+', code: 'defi' },
+    { name: 'NFT Challenges', articles: '945+', code: 'nft' },
+    { name: 'Web3 Development', articles: '1,120+', code: 'web3' },
+    { name: 'Security Contests', articles: '780+', code: 'security' },
+    { name: 'Blockchain Games', articles: '650+', code: 'games' },
+    { name: 'DAO Governance', articles: '430+', code: 'dao' },
+    { name: 'Layer 2 Solutions', articles: '385+', code: 'layer2' },
+    { name: 'Cross-chain Tech', articles: '290+', code: 'cross-chain' },
+    { name: 'Zero Knowledge', articles: '245+', code: 'zk' },
   ];
 
   // Search as you type (debounce)
@@ -93,16 +93,16 @@ const HomePage = () => {
 
         {/* Languages Grid */}
         <div className="grid grid-cols-2 md:grid-cols-5 gap-8 mb-12 max-w-4xl w-full">
-          {languages.map((lang, index) => (
+          {categories.map((category, index) => (
             <Link
-              key={lang.code}
+              key={category.code}
               to="/article"
               className="text-center hover:bg-gray-50 p-4 rounded-lg transition-colors"
             >
               <div className="text-blue-600 hover:text-blue-800 font-medium text-lg mb-1">
-                {lang.name}
+                {category.name}
               </div>
-              <div className="text-sm text-gray-500">{lang.articles} articles</div>
+              <div className="text-sm text-gray-500">{category.articles} articles</div>
             </Link>
           ))}
         </div>
@@ -189,7 +189,7 @@ const HomePage = () => {
         {/* Language Selector */}
         <div className="mb-16">
           <button className="flex items-center gap-2 text-blue-600 hover:text-blue-800 font-medium">
-            Read Contest Wiki in your language
+            Filter by Blockchain Platform
             <ChevronDown className="w-4 h-4" />
           </button>
         </div>

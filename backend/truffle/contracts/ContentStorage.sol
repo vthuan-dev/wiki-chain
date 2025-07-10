@@ -24,6 +24,7 @@ contract ContentStorage {
         bool active;
         bool exists;
         string imageURL;
+        string txHash;  // Thêm trường txHash
     }
     
     // Định nghĩa struct cho nhà tài trợ
@@ -183,7 +184,8 @@ contract ContentStorage {
             organizer: msg.sender,
             active: true,
             exists: true,
-            imageURL: imageURL
+            imageURL: imageURL,
+            txHash: ""  // Initialize with empty string
         });
         
         contestIds.push(id);

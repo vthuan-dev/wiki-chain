@@ -13,6 +13,13 @@ const ContestDetailPage = () => {
   const [contest, setContest] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  
+  // Check if contest is active based on end date
+  const isContestActive = (endDate: string) => {
+    const currentDate = new Date();
+    const contestEndDate = new Date(endDate);
+    return currentDate < contestEndDate;
+  };
 
   useEffect(() => {
     const fetchContest = async () => {
@@ -65,8 +72,10 @@ const ContestDetailPage = () => {
           {/* Title & Status */}
           <div className="flex items-center gap-3 mb-2">
             <h1 className="text-2xl font-bold flex-1">{contest.name}</h1>
-            <Badge color={contest.active ? 'success' : 'secondary'}>
-              {contest.active ? 'Đang diễn ra' : 'Đã kết thúc'}
+            <Badge className="bg-white border border-gray-200" variant="outline">
+              <span className={isContestActive(contest.end_date || contest.endDate) ? 'text-green-600' : 'text-gray-600'}>
+                {isContestActive(contest.end_date || contest.endDate) ? 'Đang mở' : 'Đã kết thúc'}
+              </span>
             </Badge>
           </div>
           {/* Description */}
@@ -91,6 +100,19 @@ const ContestDetailPage = () => {
             <div>
               <span className="font-medium">Trạng thái:</span> {contest.active ? 'Active' : 'Inactive'}
             </div>
+            {contest.tx_hash && (
+              <div className="col-span-2">
+                <span className="font-medium">Transaction: </span>
+                <a 
+                  href={`https://explorer.testnet.hii.network/tx/${contest.tx_hash}`}
+                  target="_blank"
+                  rel="noopener noreferrer" 
+                  className="text-blue-600 hover:text-blue-800 hover:underline break-all"
+                >
+                  {contest.tx_hash}
+                </a>
+              </div>
+            )}
           </div>
         </div>
       </div>
